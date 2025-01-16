@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from os import environ
 import time
 
 url = 'https://coursebook.utdallas.edu'
@@ -35,11 +36,34 @@ def get_cookie():
         print("Button with ID 'pauth_link' clicked.")
     except Exception as e:
         print(f"Failed to find or click the button: {e}")
-    print("Waiting for user to log in...")
+        exit(1)
+
+    # Log in user
+    try:
+        # Wait for up to 10 seconds for the login form to be visible
+        wait = WebDriverWait(driver, 10)
+        netid_input = wait.until(EC.visibility_of_element_located((By.ID, 'netid')))
+        password_input = wait.until(EC.visibility_of_element_located((By.ID, 'password')))
+        print("Entering credentials...")
+        netid_input.send_keys(environ['NETID'])
+        password_input.send_keys(environ['PASSWORD'])
+        pass
+    except Exception as e:
+        print(f"Failed to find the login form: {e}")
+        exit(1)
+
+    # Click the login button
+    try:
+        login_button = wait.until(EC.element_to_be_clickable((By.ID, 'login-button')))
+        login_button.click()
+        print("Login button clicked.")
+    except Exception as e:
+        print(f"Failed to click the login button: {e}")
+        exit(1)
 
     # Wait until the login is complete
     try:
-        # Wait for up to 60 seconds for the login form to be visible
+        # Wait for up to 60 seconds for the login complete to be visible
         wait = WebDriverWait(driver, 60)
         wait.until(EC.visibility_of_element_located((By.ID, 'guidedsearch')))
         print("Logged in successfully.")

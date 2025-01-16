@@ -6,13 +6,21 @@ This script will scrape coursebook and grab all the course data. You will be ask
 
 Go to https://googlechromelabs.github.io/chrome-for-testing/#stable to download the latest version of ChromeDriver. Copy the executable to the root folder of this project. You may also need the latest version of Chrome; make sure your chrome is updated.
 
+The following environmental variables need to be defined, either passed in the environment or in a `.env` file in the root directory:
+
+```
+CLASS_TERM=[Term the class is in]
+NETID=[Your netid]
+PASSWORD=[Your password]
+```
+
+> For CLASS_TERM, we need to use the format specified by Coursebook. It should be a 2-digit year number followed by either 'f' or 's', for "fall" or "spring" (eg. 23f, 24s, 24f, 25s).
+
 Then, run the code with:
 
-```
+```bash
 python main.py <semester>
 ```
-
-Replace `<semester>` with the term in the format specified by Coursebook. It should be a 2-digit year number followed by either 'f' or 's', for "fall" or "spring".
 
 ## Output
 

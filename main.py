@@ -1,16 +1,25 @@
-import sys
 from src.login import get_cookie
 from src.grab_data import get_prefixes, scrape
+from os import environ
+import dotenv
 
+# Load .env file
+dotenv.load_dotenv()
 
 def main():
-    # Check for 1 command line argument
-    if len(sys.argv) != 2:
-        print('Usage: python main.py <term (should be [2 digit year][s/f])>')
+    # Check for environmental variables
+    if 'TERM' not in environ:
+        print("TERM environmental variable not set.")
         exit(1)
-    
-    # Get the term from the command line argument
-    term = sys.argv[1]
+    if 'NETID' not in environ:
+        print("NETID environmental variable not set.")
+        exit(1)
+    if 'PASSWORD' not in environ:
+        print("PASSWORD environmental variable not set.")
+        exit(1)
+
+    # Get the term
+    term = environ['CLASS_TERM']
 
     # Get prefixes
     prefixes = get_prefixes()
