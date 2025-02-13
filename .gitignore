@@ -2,3 +2,4 @@
 chromedriver
 **/__pycache__
 .env
+classes.json

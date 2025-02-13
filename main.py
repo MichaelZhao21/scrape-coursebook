@@ -8,8 +8,8 @@ dotenv.load_dotenv()
 
 def main():
     # Check for environmental variables
-    if 'TERM' not in environ:
-        print("TERM environmental variable not set.")
+    if 'CLASS_TERM' not in environ:
+        print("CLASS_TERM environmental variable not set.")
         exit(1)
     if 'NETID' not in environ:
         print("NETID environmental variable not set.")
