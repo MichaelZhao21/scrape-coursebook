@@ -77,7 +77,7 @@ def scrape(session_id, term, prefixes):
                 }
 
                 # Get the response
-                response = requests.post(url, headers=headers, data=data)
+                response = requests.post(url, headers=headers, data=data, timeout=5)
 
                 if response.status_code != 200:
                     print('Failed to get the data page')
