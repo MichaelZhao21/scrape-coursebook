@@ -118,14 +118,21 @@ def scrape(session_id, term, prefixes):
 
                 monkey_url = f'https://coursebook.utdallas.edu/reportmonkey/cb11-export/{report_id}/json'
 
-                response = requests.get(monkey_url, headers=monkey_headers)
+                monkey_response = requests.get(monkey_url, headers=monkey_headers)
 
-                if response.status_code != 200:
+                if monkey_response.status_code != 200:
                     print('Failed to get the report response')
-                    print(response.text)
+                    print(monkey_response.text)
                     raise Exception('Failed to get the report response')
 
-                new_data = response.json()
+                new_data = monkey_response.json()
+
+                # Get the instructor netids
+                # and append the instructor ids to the data
+                ids = get_instructor_netids(response.text)
+                for i, d in enumerate(new_data['report_data']):
+                    d['instructor_ids'] = ids[i]
+
                 all_data.extend(new_data['report_data'])
                 break
             except Exception as e:
@@ -162,6 +169,9 @@ def get_single_class(data, term):
     number = b[0]
     section = b[1]
 
+    # Get the instructor netid
+    instructor_netids = get_instructor_netids(data)
+
     # Return the extracted values
     return {
         'section_address': class_section.replace(' ', '').lower() + '.' + term,
@@ -171,10 +181,29 @@ def get_single_class(data, term):
         'title': class_title.replace(r'\(.*\)', ''),
         'term': term,
         'instructors': instructor,
+        'instructor_ids': instructor_netids[0],
         'days': schedule_day.replace(' & ', ','),
         'times_12h': schedule_time,
         'location': location
     }
+
+
+def get_instructor_netids(data):
+    # Parse the string as JSON to get the HTML part
+    data_json = json.loads(data)
+    html_content = data_json["sethtml"]["#sr"]
+
+    # Parse the HTML using BeautifulSoup
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    # Extract the netid field
+    rows = soup.find_all('tr', class_='cb-row')
+    netids = []
+    for row in rows:
+        matches = re.findall(r'http:\/\/coursebook.utdallas.edu\/search\/(.*?)"', str(row))
+        netids.append(', '.join(matches))
+    
+    return netids
 
 
 def get_text_or_none(out):
