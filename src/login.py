@@ -14,9 +14,13 @@ def get_cookie():
     driver = None
     try:
         chrome_options = Options()
-        chrome_options.add_experimental_option("detach", True)  # Keeps the browser window open
+        chrome_options.add_argument("--log-level=3")
+        chrome_options.add_argument("--ignore-certificate-errors")
+        chrome_options.add_argument("--headless")
+        # chrome_options.add_experimental_option("detach", True)  # Keeps the browser window open
         service = Service("./chromedriver")  # Specify the path to your chromedriver
         driver = webdriver.Chrome(service=service, options=chrome_options)
+
     except Exception as e:
         print(f"Failed to start the Chrome driver: {e}")
         print("Go to https://googlechromelabs.github.io/chrome-for-testing/#stable to download the latest version of ChromeDriver. Copy the executable to the root folder of this project. You may also need the latest version of Chrome; make sure your chrome is updated.")

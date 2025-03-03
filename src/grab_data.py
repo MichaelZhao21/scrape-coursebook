@@ -68,7 +68,7 @@ def scrape(session_id, term, prefixes):
             }
 
             try:
-                print(f'[{i+1}/{len(prefixes)}] Getting data for prefix {p}')
+                print(f'[{i+1}/{len(prefixes)}] Getting data for {term} prefix {p}')
 
                 # Form the request data
                 data = {
@@ -137,8 +137,9 @@ def scrape(session_id, term, prefixes):
 
                 # Get the instructor netids
                 # and append the instructor ids to the data
-                ids = get_instructor_netids(response.text)
+                ids, names = get_instructor_netids(response.text)
                 for i, d in enumerate(new_data['report_data']):
+                    d['instructors'] = names[i]
                     d['instructor_ids'] = ids[i]
 
                 all_data.extend(new_data['report_data'])
@@ -269,8 +270,9 @@ def find_big_term_prefix(prefix, term, session_id):
 
                 # Get the instructor netids
                 # and append the instructor ids to the data
-                ids = get_instructor_netids(response.text)
+                ids, names = get_instructor_netids(response.text)
                 for i, d in enumerate(new_data['report_data']):
+                    d['instructors'] = names[i]
                     d['instructor_ids'] = ids[i]
                 
                 all_data.extend(new_data['report_data'])
@@ -295,7 +297,6 @@ def get_single_class(data, term, prefix):
     # Extract the required fields
     class_section = get_text_or_none(soup.find_all('a', class_='stopbubble'))
     class_title = get_text_or_none(soup.find_all('td', style="line-height: 1.1rem;")).strip()
-    instructor = get_text_or_none(soup.find_all('a', class_='ptools-popover'))
     schedule_day = get_text_or_none(soup.find_all('span', class_='clstbl__resultrow__day'))
     schedule_time = get_text_or_none(soup.find_all('span', class_='clstbl__resultrow__time'))
     location = get_text_or_none(soup.find_all('div', class_='clstbl__resultrow__location'))
@@ -314,8 +315,9 @@ def get_single_class(data, term, prefix):
         section_addr = 'utdstab' + section_addr
 
     # Get the instructor netid
-    instructor_netids = get_instructor_netids(data)
+    instructor_netids, instructors = get_instructor_netids(data)
     if len(instructor_netids) == 0:
+        instructors = ['']
         instructor_netids = ['']
 
     # Return the extracted values
@@ -326,7 +328,7 @@ def get_single_class(data, term, prefix):
         'section': section,
         'title': class_title.replace(r'\(.*\)', ''),
         'term': term,
-        'instructors': instructor,
+        'instructors': instructors[0],
         'instructor_ids': instructor_netids[0],
         'days': schedule_day.replace(' & ', ','),
         'times_12h': schedule_time,
@@ -345,11 +347,18 @@ def get_instructor_netids(data):
     # Extract the netid field
     rows = soup.find_all('tr', class_='cb-row')
     netids = []
+    names = []
     for row in rows:
-        matches = re.findall(r'http:\/\/coursebook.utdallas.edu\/search\/(.*?)"', str(row))
-        netids.append(', '.join(matches))
+        matches = re.findall(r'http:\/\/coursebook.utdallas.edu\/search\/(.*?)" title="(.*?)"', str(row))
+        if len(matches) == 0:
+            netids.append('')
+            names.append('')
+            continue
+        match_zipped = list(zip(*matches))
+        netids.append(', '.join(match_zipped[0]))
+        names.append(', '.join(match_zipped[1]))
     
-    return netids
+    return netids, names
 
 
 def get_text_or_none(out):
